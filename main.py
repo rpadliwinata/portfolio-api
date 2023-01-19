@@ -69,6 +69,7 @@ URL yang bisa diakses tanpa login adalah URL dengan method get. Untuk mendapatka
 
 app = FastAPI(
     title='Portfolio Control',
+    description=description,
     version='1.0.0',
 )
 
