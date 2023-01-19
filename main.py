@@ -59,7 +59,18 @@ db_project = deta.Base('project')
 db_timeline = deta.Base('timeline')
 
 
-app = FastAPI(title='Portfolio Control')
+description = """
+PortfolioAPI adalah tempat anda menyimpan informasi yang biasa ada pada sebuah portfolio seperti kontak, project, dan pengalaman.
+## Mendaftar
+Untuk bisa menggunakan API ini anda tinggal mendaftar di link signup yang tersedia di bawah dan login dengan cara mengeklik button Authorize di bagian kanan.  
+URL yang bisa diakses tanpa login adalah URL dengan method get. Untuk mendapatkan data user harus mendambahkan username pada path parameter get
+"""
+
+
+app = FastAPI(
+    title='Portfolio Control',
+    version='1.0.0',
+)
 
 
 @manager.user_loader()
@@ -138,6 +149,14 @@ async def add_contact(name: str, label: str, link: Union[AnyUrl, str], user = De
 @app.delete('/contact', response_model=ResponseFormat, tags=['contact'])
 async def delete_contact(key: str, user = Depends(manager)):
     res = db_contact.get(key)
+    if res['username'] != user['username']:
+        return {
+            'status': status.HTTP_401_UNAUTHORIZED,
+            'success': False,
+            'message': "Cannot delete another person's contact",
+            'data': {}
+        }
+    
     db_contact.delete(key)
     return {
         'status': status.HTTP_200_OK,
@@ -148,6 +167,15 @@ async def delete_contact(key: str, user = Depends(manager)):
 
 @app.patch('/contact', response_model=ResponseFormat, tags=['contact'])
 async def update_contact(key: str, name: str, label: str, link: Union[AnyUrl, str], user = Depends(manager)):
+    res = db_contact.get(key)
+    if res['username'] != user['username']:
+        return {
+            'status': status.HTTP_401_UNAUTHORIZED,
+            'success': False,
+            'message': "Cannot change another person's contact",
+            'data': {}
+        }
+    
     data = {
         'username': user['username'],
         'name': name,
@@ -202,6 +230,14 @@ async def add_project(title: str,
 @app.delete('/project', response_model=ResponseFormat, tags=['project'])
 async def delete_project(key: str, user = Depends(manager)):
     res = db_project.get(key)
+    if res['username'] != user['username']:
+        return {
+            'status': status.HTTP_401_UNAUTHORIZED,
+            'success': False,
+            'message': "Cannot delete another person's project",
+            'data': {}
+        }
+    
     db_project.delete(key)
     return {
         'status': status.HTTP_200_OK,
@@ -220,6 +256,15 @@ async def update_project(key: str,
                          demo: str,
                          image: Union[str, None] = None,
                          user = Depends(manager)):
+    res = db_project.get(key)
+    if res['username'] != user['username']:
+        return {
+            'status': status.HTTP_401_UNAUTHORIZED,
+            'success': False,
+            'message': "Cannot change another person's project",
+            'data': {}
+        }
+    
     data = {
         'username': user['username'],
         'title': title,
@@ -279,6 +324,14 @@ async def add_timeline(title: str,
 @app.delete('/timeline', response_model=ResponseFormat, tags=['timeline'])
 async def delete_timeline(key: str, user = Depends(manager)):
     res = db_timeline.get(key)
+    if res['username'] != user['username']:
+        return {
+            'status': status.HTTP_401_UNAUTHORIZED,
+            'success': False,
+            'message': "Cannot delete another person's timeline",
+            'data': {}
+        }
+    
     db_timeline.delete(key)
     
     return {
@@ -299,6 +352,15 @@ async def update_timeline(key: str,
                           end_date: Union[str, None] = None,
                           date_: Union[str, None] = None,
                           user = Depends(manager)):
+    res = db_timeline.get(key)
+    if res['username'] != user['username']:
+        return {
+            'status': status.HTTP_401_UNAUTHORIZED,
+            'success': False,
+            'message': "Cannot change another person's timeline",
+            'data': {}
+        }
+    
     data = {
         'username': user['username'],
         'title': title,
